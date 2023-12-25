@@ -116,7 +116,7 @@ function mensagemErro(titulo, mensagem = 'erro', id) {
         const paragrafo = document.createElement('p');
         paragrafo.setAttribute('id', `${id}`);
         paragrafo.innerHTML = `<span id='${id}-titulo'>${titulo}</span>: ${mensagem}`;
-        const modalBody = document.getElementById('modal-body-erro');
+        const modalBody = document.getElementById('modal-body-resultado');
         modalBody.appendChild(paragrafo);
         document.getElementById(`${id}-titulo`).style.color = 'red';
 
@@ -216,8 +216,10 @@ function cadastrarDespesa() {
         modalBody.appendChild(paragrafo);
         mostrarModal(modalDespesa);
     } else {
-        const modalDespesa = document.getElementById('modal-erro-cadastro');
-        const btnFecharModal = document.getElementsByClassName('btn-voltar-modal');
+
+        classes = ['text-danger','font-weight-bold','text-uppercase'];
+        definirConteudoComponenteModal(modalTitulo,`Erro no cadastro da despesa`);
+        definirClassesComponenteModal(modalTitulo,classes);
 
         if (!isDataValida(despesa.ano, despesa.mes, despesa.dia)) {
             mensagemErro('Data Inválida', 'Por verifique se todos os campos estão corretos', 'data-modal');
@@ -238,17 +240,11 @@ function cadastrarDespesa() {
         for (botao of btnFecharModal) {
             // Fechar o modal de erro
             botao.addEventListener('click', () => {
-                modalDespesa.classList.remove('show');
-                modalDespesa.style.display = 'none';
-                modalDespesa.setAttribute('arial-hidden', 'true');
+                esconderModal(modalDespesa);
                 removerMensagemErro();
             });
-            // Mostra o modal de erro
-            modalDespesa.classList.add('show');
-            modalDespesa.style.display = 'block';
-            modalDespesa.removeAttribute('arial-hidden');
         }
-
+        mostrarModal(modalDespesa); 
     }
 
 }
