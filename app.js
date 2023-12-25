@@ -109,6 +109,15 @@ class Despesa {
         }
     }
 }
+/**
+ * 
+ * @param {string[]} campos Campos que se deseja remover o conteúdo presente 
+ */
+function limparCamposFormulario(campos = null){
+    for(campo of campos){
+        campo.value = '';
+    }
+}
 
 // Mostra os campos inválidos do modal
 function mensagemErro(titulo, mensagem = 'erro', id) {
@@ -215,11 +224,12 @@ function cadastrarDespesa() {
         modalBody.appendChild(data);
         modalBody.appendChild(paragrafo);
         mostrarModal(modalDespesa);
+        limparCamposFormulario([ano,mes,dia,tipo,descricao,valor]);
     } else {
 
         classes = ['text-danger','font-weight-bold','text-uppercase'];
-        definirConteudoComponenteModal(modalTitulo,`Erro no cadastro da despesa`);
         definirClassesComponenteModal(modalTitulo,classes);
+        definirConteudoComponenteModal(modalTitulo,`Erro no cadastro da despesa`);
 
         if (!isDataValida(despesa.ano, despesa.mes, despesa.dia)) {
             mensagemErro('Data Inválida', 'Por verifique se todos os campos estão corretos', 'data-modal');
