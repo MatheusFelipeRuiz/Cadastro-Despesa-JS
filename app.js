@@ -295,13 +295,6 @@ function definirTipoDespesa(despesa){
             tipo_despesa = 'Transporte';
             break;
     }
-/* 
-    <option value="1">Alimentação</option>
-    <option value="2">Educação</option>
-    <option value="3">Lazer</option>
-    <option value="4">Saúde</option>
-    <option value="5">Transporte</option> */
-
     return tipo_despesa;
 }
 
@@ -323,10 +316,15 @@ function gerarColunas(qtdeColunas = 1, despesa) {
                     conteudo = `${despesa._descricao}`;
                     break;
                 case 3: 
-                    conteudo = `R$ ${despesa._valor.toLocaleString('pt-BR', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    })} reais`;
+                    if(Number.isInteger(Number(despesa._valor))){
+                        conteudo = `RS ${despesa._valor},00 reais`;
+                    }else {
+                        conteudo = `R$ ${despesa._valor.toLocaleString('pt-BR', {
+                            minimumFractionDigits: 2,
+                            maximumFractionDigits: 2
+                        })} reais`;
+
+                    };
                     break;
                 default:
                     conteudo = 'Não Válido';
@@ -336,7 +334,6 @@ function gerarColunas(qtdeColunas = 1, despesa) {
             elemento.setAttribute('class',chaves[coluna])
             elemento.innerHTML = conteudo;
             colunas.push(elemento);
-            console.log(elemento);
         }
     }
     return colunas;
@@ -369,13 +366,11 @@ function preencherCampos(listaDespesas = null) {
 function carregarListaDespesas() {
     const QTDE_DESPESAS = localStorage.length;
     let listaDespesas = [];
-    for (let chave = 0; chave < QTDE_DESPESAS; chave++) {
+    for (let chave = 1; chave <= QTDE_DESPESAS; chave++) {
         if (localStorage.getItem(chave)) {
             listaDespesas.push(JSON.parse(localStorage.getItem(chave)));
         }
     }
-    console.log(listaDespesas);
-
     preencherCampos(listaDespesas);
 
 }
