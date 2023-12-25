@@ -20,9 +20,6 @@ const isValorValido = (valor) => {
 
 }
 
-
-
-
 class Despesa {
     /**
      * 
@@ -140,7 +137,37 @@ function removerMensagemErro() {
     });
 }
 
+function mostrarModal(modal = null){
+    modal.classList.add('show');
+    modal.style.display = 'block';
+    modal.removeAttribute('arial-hidden');
+}
 
+function esconderModal(modal = null){
+    modal.classList.remove('show');
+    modal.style.display = 'none';
+    modal.setAttribute('arial-hidden','true');
+}
+
+/**
+ * 
+ * @param {object} componenteModal Componente do modal que deseja ser inserido o conteúdol 
+ * @param {string} conteudo Contéudo no formato string que desejado que seja inserido dentro componente do modal
+ */
+function definirConteudoComponenteModal(componenteModal, conteudo){
+    componenteModal.innerHTML = conteudo;
+}
+
+/**
+ * 
+ * @param {object} componenteModal  Componente do modal que deseja ser inserido as classes
+ * @param {string[]} classes Array de classes no formato string desejado para o componente do modal
+ */
+function definirClassesComponenteModal(componenteModal,classes){
+    if(Array.isArray(classes)){
+        componenteModal.classList.add(...classes);
+    }
+}
 
 function cadastrarDespesa() {
 
@@ -152,43 +179,42 @@ function cadastrarDespesa() {
     const valor = document.getElementById('valor');
 
     const despesa = new Despesa(ano.value, mes.value, dia.value, tipo.value, descricao.value.trim(), valor.value);
+    // Elementos do Modal
+    const modalDespesa = document.getElementById('modal-resultado');
+    const modalTitulo = document.getElementsByClassName('modal-title')[0];
+    const modalBody = document.getElementsByClassName('modal-body')[0];
+    const btnFecharModal = document.getElementsByClassName('btn-voltar-modal');
+    
+    let classes = [];
 
     if (despesa.isDadosValidos()) {
         gravar(despesa);
-        const modalDespesa = document.getElementById('modal-sucesso-cadastro');
-        const btnFecharModal = document.getElementsByClassName('btn-voltar-modal');
         
         const data = document.createElement('h4');
         data.setAttribute('class','center');
         data.innerHTML = `Data: ${despesa.dia}/${despesa.mes}/${despesa.ano}`;
         const paragrafo = document.createElement('p');
+
         paragrafo.innerHTML = `Despesa de R$ ${despesa.valor.toLocaleString('pt-BR', {
            maximumFractionDigits: 2,
            minimumFractionDigits: 2 
         })} reais cadastrada com sucesso!`;
 
-
-
-        const modalBody = document.getElementById('modal-body-sucesso');
+        classes = ['text-success','font-weight-bold','text-uppercase'];
+        definirConteudoComponenteModal(modalTitulo,`Despesa cadastrada com sucesso`);
+        definirClassesComponenteModal(modalTitulo,classes);
 
         for (botao of btnFecharModal) {
             botao.addEventListener('click', () => {
-                modalDespesa.classList.remove('show');
-                modalDespesa.style.display = 'none';
-                modalDespesa.setAttribute('arial-hidden', 'true');
-
+                esconderModal(modalDespesa);
                 // Removendo o parágrafo de cadastro
-                modalBody.removeChild(paragrafo);        
+                modalBody.removeChild(paragrafo); 
+                modalTitulo.classList.remove(...classes);       
             });
         }
         modalBody.appendChild(data);
         modalBody.appendChild(paragrafo);
-
-        // Mostrar o modal de sucesso
-        modalDespesa.classList.add('show');
-        modalDespesa.style.display = 'block';
-        modalDespesa.removeAttribute('arial-hidden');
-
+        mostrarModal(modalDespesa);
     } else {
         const modalDespesa = document.getElementById('modal-erro-cadastro');
         const btnFecharModal = document.getElementsByClassName('btn-voltar-modal');
@@ -226,6 +252,7 @@ function cadastrarDespesa() {
     }
 
 }
+
 
 // Grava a despesa cadastrada no locastorage
 function gravar(despesa) {
