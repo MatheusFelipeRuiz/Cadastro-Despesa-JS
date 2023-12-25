@@ -1,5 +1,7 @@
 const btnCadastrar = document.getElementById('btn-cadastrar');
-btnCadastrar.addEventListener('click', cadastrarDespesa);
+if (btnCadastrar) {
+    btnCadastrar.addEventListener('click', cadastrarDespesa);
+}
 
 const isDataValida = (ano, mes, dia) => {
     if (dia <= 31 && dia >= 1 && mes >= 1 && mes <= 12) {
@@ -113,8 +115,8 @@ class Despesa {
  * 
  * @param {string[]} campos Campos que se deseja remover o conteúdo presente 
  */
-function limparCamposFormulario(campos = null){
-    for(campo of campos){
+function limparCamposFormulario(campos = null) {
+    for (campo of campos) {
         campo.value = '';
     }
 }
@@ -146,16 +148,16 @@ function removerMensagemErro() {
     });
 }
 
-function mostrarModal(modal = null){
+function mostrarModal(modal = null) {
     modal.classList.add('show');
     modal.style.display = 'block';
     modal.removeAttribute('arial-hidden');
 }
 
-function esconderModal(modal = null){
+function esconderModal(modal = null) {
     modal.classList.remove('show');
     modal.style.display = 'none';
-    modal.setAttribute('arial-hidden','true');
+    modal.setAttribute('arial-hidden', 'true');
 }
 
 /**
@@ -163,7 +165,7 @@ function esconderModal(modal = null){
  * @param {object} componenteModal Componente do modal que deseja ser inserido o conteúdol 
  * @param {string} conteudo Contéudo no formato string que desejado que seja inserido dentro componente do modal
  */
-function definirConteudoComponenteModal(componenteModal, conteudo){
+function definirConteudoComponenteModal(componenteModal, conteudo) {
     componenteModal.innerHTML = conteudo;
 }
 
@@ -172,8 +174,8 @@ function definirConteudoComponenteModal(componenteModal, conteudo){
  * @param {object} componenteModal  Componente do modal que deseja ser inserido as classes
  * @param {string[]} classes Array de classes no formato string desejado para o componente do modal
  */
-function definirClassesComponenteModal(componenteModal,classes){
-    if(Array.isArray(classes)){
+function definirClassesComponenteModal(componenteModal, classes) {
+    if (Array.isArray(classes)) {
         componenteModal.classList.add(...classes);
     }
 }
@@ -193,43 +195,43 @@ function cadastrarDespesa() {
     const modalTitulo = document.getElementsByClassName('modal-title')[0];
     const modalBody = document.getElementsByClassName('modal-body')[0];
     const btnFecharModal = document.getElementsByClassName('btn-voltar-modal');
-    
+
     let classes = [];
 
     if (despesa.isDadosValidos()) {
         gravar(despesa);
-        
+
         const data = document.createElement('h4');
-        data.setAttribute('class','center');
+        data.setAttribute('class', 'center');
         data.innerHTML = `Data: ${despesa.dia}/${despesa.mes}/${despesa.ano}`;
         const paragrafo = document.createElement('p');
 
         paragrafo.innerHTML = `Despesa de R$ ${despesa.valor.toLocaleString('pt-BR', {
-           maximumFractionDigits: 2,
-           minimumFractionDigits: 2 
+            maximumFractionDigits: 2,
+            minimumFractionDigits: 2
         })} reais cadastrada com sucesso!`;
 
-        classes = ['text-success','font-weight-bold','text-uppercase'];
-        definirConteudoComponenteModal(modalTitulo,`Despesa cadastrada com sucesso`);
-        definirClassesComponenteModal(modalTitulo,classes);
+        classes = ['text-success', 'font-weight-bold', 'text-uppercase'];
+        definirConteudoComponenteModal(modalTitulo, `Despesa cadastrada com sucesso`);
+        definirClassesComponenteModal(modalTitulo, classes);
 
         for (botao of btnFecharModal) {
             botao.addEventListener('click', () => {
                 esconderModal(modalDespesa);
                 // Removendo o parágrafo de cadastro
-                modalBody.removeChild(paragrafo); 
-                modalTitulo.classList.remove(...classes);       
+                modalBody.removeChild(paragrafo);
+                modalTitulo.classList.remove(...classes);
             });
         }
         modalBody.appendChild(data);
         modalBody.appendChild(paragrafo);
         mostrarModal(modalDespesa);
-        limparCamposFormulario([ano,mes,dia,tipo,descricao,valor]);
+        limparCamposFormulario([ano, mes, dia, tipo, descricao, valor]);
     } else {
 
-        classes = ['text-danger','font-weight-bold','text-uppercase'];
-        definirClassesComponenteModal(modalTitulo,classes);
-        definirConteudoComponenteModal(modalTitulo,`Erro no cadastro da despesa`);
+        classes = ['text-danger', 'font-weight-bold', 'text-uppercase'];
+        definirClassesComponenteModal(modalTitulo, classes);
+        definirConteudoComponenteModal(modalTitulo, `Erro no cadastro da despesa`);
 
         if (!isDataValida(despesa.ano, despesa.mes, despesa.dia)) {
             mensagemErro('Data Inválida', 'Por verifique se todos os campos estão corretos', 'data-modal');
@@ -254,7 +256,7 @@ function cadastrarDespesa() {
                 removerMensagemErro();
             });
         }
-        mostrarModal(modalDespesa); 
+        mostrarModal(modalDespesa);
     }
 
 }
@@ -268,4 +270,112 @@ function gravar(despesa) {
     localStorage.setItem(`${CHAVE + 1}`, VALOR);
 }
 
-const qtde_registros = localStorage.length;
+function adicionarLinha(corpoTabela) {
+    let linha = document.createElement('tr');
+    return corpoTabela.appendChild(linha);
+}
+
+function definirTipoDespesa(despesa){
+    let tipo_despesa = '';
+
+    switch(despesa._tipo){
+        case '1':
+            tipo_despesa = 'Alimentação';
+            break;
+        case '2':
+            tipo_despesa = 'Educação'; 
+            break;
+        case '3':
+            tipo_despesa = 'Lazer';
+            break;
+        case '4':
+            tipo_despesa = 'Saúde';
+            break;
+        case '5':
+            tipo_despesa = 'Transporte';
+            break;
+    }
+/* 
+    <option value="1">Alimentação</option>
+    <option value="2">Educação</option>
+    <option value="3">Lazer</option>
+    <option value="4">Saúde</option>
+    <option value="5">Transporte</option> */
+
+    return tipo_despesa;
+}
+
+function gerarColunas(qtdeColunas = 1, despesa) {
+    let colunas = [];
+    let elemento = null;
+    const chaves = ['data','tipo','descricao','valor'];
+    if (qtdeColunas >= 1) {
+        let conteudo = null;
+        for (let coluna = 0; coluna < qtdeColunas; coluna++) {
+            switch(coluna){
+                case 0:
+                    conteudo = `${despesa._dia}/${despesa._mes}/${despesa._ano}`;
+                    break;
+                case 1:
+                    conteudo = `${definirTipoDespesa(despesa)}`;
+                    break;
+                case 2:
+                    conteudo = `${despesa._descricao}`;
+                    break;
+                case 3: 
+                    conteudo = `R$ ${despesa._valor.toLocaleString('pt-BR', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })} reais`;
+                    break;
+                default:
+                    conteudo = 'Não Válido';
+            }
+
+            elemento = document.createElement('th');
+            elemento.setAttribute('class',chaves[coluna])
+            elemento.innerHTML = conteudo;
+            colunas.push(elemento);
+            console.log(elemento);
+        }
+    }
+    return colunas;
+}
+
+
+function adicionarColunas(linha, colunas) {
+    for (coluna of colunas) {
+        linha.appendChild(coluna);
+    }
+}
+
+function preencherCampos(listaDespesas = null) {
+    const tabelaCorpo = document.getElementsByTagName('tbody')[0];
+    const QTDE_COLUNAS = 4;
+    let colunas = null;
+    let linha = null;
+    if (Array.isArray(listaDespesas)) {
+        listaDespesas.forEach((despesa) => {
+            linha = adicionarLinha(tabelaCorpo);
+            colunas = gerarColunas(QTDE_COLUNAS, despesa);
+            adicionarColunas(linha,colunas);
+        });
+    }
+
+    tabelaCorpo.appendChild(linha);
+
+}
+
+function carregarListaDespesas() {
+    const QTDE_DESPESAS = localStorage.length;
+    let listaDespesas = [];
+    for (let chave = 0; chave < QTDE_DESPESAS; chave++) {
+        if (localStorage.getItem(chave)) {
+            listaDespesas.push(JSON.parse(localStorage.getItem(chave)));
+        }
+    }
+    console.log(listaDespesas);
+
+    preencherCampos(listaDespesas);
+
+}
