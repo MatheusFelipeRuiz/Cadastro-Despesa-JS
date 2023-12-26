@@ -3,6 +3,94 @@ if (btnCadastrar) {
     btnCadastrar.addEventListener('click', cadastrarDespesa);
 }
 
+class BancoDados {
+
+    constructor() {
+        this.listaDespesas = this.carregarListaDespesas();
+    }
+
+    gravar(despesa) {
+        const CHAVE = localStorage.length;
+
+        const VALOR = JSON.stringify(despesa);
+        localStorage.setItem(`${CHAVE + 1}`, VALOR);
+    }
+
+    carregarListaDespesas() {
+        const QTDE_DESPESAS = localStorage.length;
+        let listaDespesas = [];
+        let elemento = null;
+        for (let chave = 1; chave <= QTDE_DESPESAS + 10; chave++) {
+            if (localStorage.getItem(chave)) {
+                elemento = JSON.parse(localStorage.getItem(chave));
+                elemento._id = chave;
+                listaDespesas.push(elemento);
+            }
+        }
+        return listaDespesas;
+    }
+
+    pesquisarDespesa = () => {
+        const LISTA_DESPESAS = this.carregarListaDespesas();
+        const valor = Number.parseFloat(document.getElementById('valor').value);
+        const descricao = document.getElementById('descricao').value.trim().toLowerCase();
+        const tipo = document.getElementById('tipo').value;
+        const dia = document.getElementById('dia').value;
+        const mes = document.getElementById('mes').value;
+        const ano = document.getElementById('ano').value;
+
+        let resultado = LISTA_DESPESAS;
+
+
+        if (!isNaN(valor)) {
+            resultado = resultado.filter((despesa) => despesa._valor === valor);
+        }
+
+        if (descricao !== '') {
+            resultado = resultado.filter((despesa) => despesa._descricao.toLowerCase().indexOf(descricao) !== -1);
+        }
+
+        if (tipo !== '') {
+            resultado = resultado.filter((despesa) => despesa._tipo === tipo);
+        }
+
+        if (dia !== '') {
+            resultado = resultado.filter((despesa) => despesa._dia === dia);
+        }
+
+        if (mes !== '') {
+            resultado = resultado.filter((despesa) => despesa._mes === mes);
+        }
+
+        if (ano !== '') {
+            resultado = resultado.filter((despesa) => despesa._ano === ano);
+        }
+
+        limparTabela();
+        if (ano === '' && mes === '' && dia === '' && tipo === '' && descricao === '' && isNaN(valor)) {
+            preencherCampos(LISTA_DESPESAS);
+        } else {
+            preencherCampos(resultado);
+        }
+
+    }
+
+    remover(id) {
+        localStorage.removeItem(id);
+    }
+}
+
+if (document.getElementById('body')) {
+    const bodyHTML = document.getElementById('body');
+    bodyHTML.onload = () => {
+        const bancoDados = new BancoDados();
+
+        preencherCampos(bancoDados.carregarListaDespesas());
+}
+};
+
+
+
 const isDataValida = (ano, mes, dia) => {
     if (dia <= 31 && dia >= 1 && mes >= 1 && mes <= 12) {
         return !isNaN(new Date(`${ano}/${mes - 1}/${dia}`));
@@ -43,7 +131,7 @@ class Despesa {
 
     isDadosValidos() {
         for (let chave in this) {
-            if (this[chave] === null || this[chave] === '' || this[chave] === null) {
+            if (this[chave] === null || this[chave] === '') {
                 return false;
             }
 
@@ -189,7 +277,7 @@ function cadastrarDespesa() {
     const descricao = document.getElementById('descricao');
     const valor = document.getElementById('valor');
 
-    const despesa = new Despesa(ano.value, mes.value, dia.value, tipo.value, descricao.value.trim(), valor.value);
+    const despesa = new Despesa(ano.value, mes.value, dia.value, tipo.value, descricao.value.trim(), Number.parseFloat(valor.value));
     // Elementos do Modal
     const modalDespesa = document.getElementById('modal-resultado');
     const modalTitulo = document.getElementsByClassName('modal-title')[0];
@@ -197,9 +285,9 @@ function cadastrarDespesa() {
     const btnFecharModal = document.getElementsByClassName('btn-voltar-modal');
 
     let classes = [];
+    const bd = new BancoDados();
 
     if (despesa.isDadosValidos()) {
-        gravar(despesa);
 
         const data = document.createElement('h4');
         data.setAttribute('class', 'center');
@@ -219,6 +307,7 @@ function cadastrarDespesa() {
             botao.addEventListener('click', () => {
                 esconderModal(modalDespesa);
                 // Removendo o parágrafo de cadastro
+                modalBody.removeChild(data);
                 modalBody.removeChild(paragrafo);
                 modalTitulo.classList.remove(...classes);
             });
@@ -227,6 +316,7 @@ function cadastrarDespesa() {
         modalBody.appendChild(paragrafo);
         mostrarModal(modalDespesa);
         limparCamposFormulario([ano, mes, dia, tipo, descricao, valor]);
+        bd.gravar(despesa);
     } else {
 
         classes = ['text-danger', 'font-weight-bold', 'text-uppercase'];
@@ -254,6 +344,7 @@ function cadastrarDespesa() {
             botao.addEventListener('click', () => {
                 esconderModal(modalDespesa);
                 removerMensagemErro();
+                modalTitulo.classList.remove(...classes);
             });
         }
         mostrarModal(modalDespesa);
@@ -262,28 +353,27 @@ function cadastrarDespesa() {
 }
 
 
-// Grava a despesa cadastrada no locastorage
-function gravar(despesa) {
-    const CHAVE = localStorage.length;
-
-    const VALOR = JSON.stringify(despesa);
-    localStorage.setItem(`${CHAVE + 1}`, VALOR);
+const btnPesquisar = document.getElementById('btn-pesquisar');
+if (btnPesquisar) {
+    btnPesquisar.addEventListener('click', new BancoDados().pesquisarDespesa);
 }
 
-function adicionarLinha(corpoTabela) {
-    let linha = document.createElement('tr');
-    return corpoTabela.appendChild(linha);
+
+function limparTabela() {
+    document.getElementsByTagName('tbody')[0].innerHTML = '';
 }
 
-function definirTipoDespesa(despesa){
+
+
+function definirTipoDespesa(despesa) {
     let tipo_despesa = '';
 
-    switch(despesa._tipo){
+    switch (despesa._tipo) {
         case '1':
             tipo_despesa = 'Alimentação';
             break;
         case '2':
-            tipo_despesa = 'Educação'; 
+            tipo_despesa = 'Educação';
             break;
         case '3':
             tipo_despesa = 'Lazer';
@@ -296,81 +386,35 @@ function definirTipoDespesa(despesa){
             break;
     }
     return tipo_despesa;
+
 }
 
-function gerarColunas(qtdeColunas = 1, despesa) {
-    let colunas = [];
-    let elemento = null;
-    const chaves = ['data','tipo','descricao','valor'];
-    if (qtdeColunas >= 1) {
-        let conteudo = null;
-        for (let coluna = 0; coluna < qtdeColunas; coluna++) {
-            switch(coluna){
-                case 0:
-                    conteudo = `${despesa._dia}/${despesa._mes}/${despesa._ano}`;
-                    break;
-                case 1:
-                    conteudo = `${definirTipoDespesa(despesa)}`;
-                    break;
-                case 2:
-                    conteudo = `${despesa._descricao}`;
-                    break;
-                case 3: 
-                    if(Number.isInteger(Number(despesa._valor))){
-                        conteudo = `RS ${despesa._valor},00 reais`;
-                    }else {
-                        conteudo = `R$ ${despesa._valor.toLocaleString('pt-BR', {
-                            minimumFractionDigits: 2,
-                            maximumFractionDigits: 2
-                        })} reais`;
-
-                    };
-                    break;
-                default:
-                    conteudo = 'Não Válido';
-            }
-
-            elemento = document.createElement('th');
-            elemento.setAttribute('class',chaves[coluna])
-            elemento.innerHTML = conteudo;
-            colunas.push(elemento);
-        }
-    }
-    return colunas;
-}
-
-
-function adicionarColunas(linha, colunas) {
-    for (coluna of colunas) {
-        linha.appendChild(coluna);
-    }
-}
-
-function preencherCampos(listaDespesas = null) {
+function preencherCampos(listaDespesas) {
     const tabelaCorpo = document.getElementsByTagName('tbody')[0];
-    const QTDE_COLUNAS = 4;
-    let colunas = null;
     let linha = null;
+    const BD = new BancoDados();
     if (Array.isArray(listaDespesas)) {
         listaDespesas.forEach((despesa) => {
-            linha = adicionarLinha(tabelaCorpo);
-            colunas = gerarColunas(QTDE_COLUNAS, despesa);
-            adicionarColunas(linha,colunas);
+            linha = tabelaCorpo.insertRow();
+            linha.insertCell(0).innerHTML = `${despesa._dia}/${despesa._mes}/${despesa._ano}`;;
+            linha.insertCell(1).innerHTML = `${definirTipoDespesa(despesa)}`;
+            linha.insertCell(2).innerHTML = `${despesa._descricao}`;
+            linha.insertCell(3).innerHTML = `R$ ${despesa._valor.toLocaleString('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2
+            })} reais`;
+            const btnExcluir = document.createElement('button');
+            btnExcluir.classList.add('btn', 'btn-danger');
+            btnExcluir.innerHTML = `<i class="fas fa-trash"> </>`;
+            btnExcluir.setAttribute('id', despesa._id);
+            btnExcluir.addEventListener('click', () => {
+                BD.remover(btnExcluir.getAttribute('id'));
+                limparTabela();
+                preencherCampos(BD.carregarListaDespesas());
+            });
+            linha.insertCell(4).append(btnExcluir);
         });
     }
-
-    tabelaCorpo.appendChild(linha);
-
 }
 
-function carregarListaDespesas() {
-    const QTDE_DESPESAS = localStorage.length;
-    let listaDespesas = [];
-    for (let chave = 1; chave <= QTDE_DESPESAS; chave++) {
-        if (localStorage.getItem(chave)) {
-            listaDespesas.push(JSON.parse(localStorage.getItem(chave)));
-        }
-    }
-    preencherCampos(listaDespesas);
 
-}
